@@ -20,23 +20,22 @@ dataGood <- filter(data, !is.na(steps))
 ```
 
 ## What is mean total number of steps taken per day?
-
-1. Using the data frame that omits missing values, we create a histogram of the total number of steps taken each day: 
+- Using the data frame that omits missing values, we create a histogram of the total number of steps taken each day: 
 ```{r echo = TRUE}
 ByDate <- group_by(dataGood, date)
 stepsByDate <- summarize(ByDate, numSteps=sum(steps))
 ggplot(stepsByDate, aes(x=numSteps)) + geom_bar(binwidth = 500) + 
-        xlab("Number of Steps") + ylab("Frequency") + ggtitle("Total Steps Per Day")
+        xlab("Number of Steps") + ylab("Frequency") + ggtitle("Total Steps Per Day") 
 ```
-
-2. We also report the mean and median total number of steps taken per day:
+  
+- We also report the mean and median total number of steps taken per day:
 ```{r echo = TRUE}
 mean(stepsByDate$numSteps)
 median(stepsByDate$numSteps)
 ```
 
 ## What is the average daily activity pattern?
-1. Again using the data frame that omits missing values, we make a time series plot of the 5-minute intervals and the average number of steps taken in each interval (averaged across all days):
+- Again using the data frame that omits missing values, we make a time series plot of the 5-minute intervals and the average number of steps taken in each interval (averaged across all days):
 ```{r echo = TRUE}
 ByInt <- group_by(dataGood, interval)
 stepsByInt <- summarize(ByInt, aveSteps = mean(steps))
@@ -44,29 +43,28 @@ ggplot(stepsByInt, aes(x=interval, y=aveSteps)) + geom_line(type = 'l') +
   xlab('Interval') + ylab('Average Number of Steps') + ggtitle("Average Steps By Interval")
 ```
 
-2. On average across all the days in the dataset, we observe that the interval 835 contains the maximum number of steps:
+- On average across all the days in the dataset, we observe that the interval 835 contains the maximum number of steps:
 ```{r echo = TRUE}
 filter(stepsByInt, aveSteps==max(aveSteps))$interval
 ```
 
 
 ## Imputing missing values
-
-1. We observe that there are 2,304 total observations in the dataset that have missing values:
+- We observe that there are 2,304 total observations in the dataset that have missing values:
 ```{r echo = TRUE} 
 nrow(data) - nrow(dataGood)
 ```
 
-2. To fill in the missing data, we decide to replace each missing value with the average number of steps recorded for the corresponding interval.
+- To fill in the missing data, we decide to replace each missing value with the average number of steps recorded for the corresponding interval.
 
-3. Armed with the averages computed above, this new dataset is easily created as follows:
+- Armed with the averages computed above, this new dataset is easily created as follows:
 ```{r echo = TRUE}
 dataFixed <- merge(data, stepsByInt)
 badRows <- is.na(dataFixed$steps)
 dataFixed[badRows,'steps'] <- dataFixed[badRows, 'aveSteps']
 ```
 
-4. Using this new dataset instead, we again make a histogram of the total number of steps taken each day: 
+- Using this new dataset instead, we again make a histogram of the total number of steps taken each day: 
 ```{r echo = TRUE}
 ByDateFixed <- group_by(dataFixed, date)
 stepsByDateFixed <- summarize(ByDateFixed, numSteps=sum(steps))
@@ -83,15 +81,14 @@ We observe that these calculations are very close to our earlier calculations, w
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
-
-1. Using the dataset that was creating by estimating missing values, we add a variable indicating if each day is a weekday or weekend day: 
+- Using the dataset that was creating by estimating missing values, we add a variable indicating if each day is a weekday or weekend day: 
 ```{r echo = TRUE}
 dayType <- as.factor(weekdays(strptime(dataFixed$date, format = '%Y-%m-%d')) %in% c('Saturday', 'Sunday'))
 levels(dayType) <- c('weekday', 'weekend')
 dataFixed <- mutate(dataFixed, dayType = dayType)
 ```
 
-2. Finally, we make a panel plot containing a time series plot of the 5-minute interval  and the average number of steps taken, where the average is computed across all weekday days or weekend days.
+- Finally, we make a panel plot containing a time series plot of the 5-minute interval  and the average number of steps taken, where the average is computed across all weekday days or weekend days.
 ```{r echo = TRUE}
 ByDayAndInt <- group_by(dataFixed, dayType, interval)
 stepsByDayAndInt <- summarize(ByDayAndInt, aveSteps = mean(steps))
